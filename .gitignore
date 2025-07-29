@@ -1,0 +1,12 @@
+# Ignore everything by default
+*
+
+# Allow only selected files
+!email_client.py
+!send_acceptance.py
+!send_rejection.py
+!send_final_acceptance.py
+!send_personalised_rejection.py
+
+# Allow .gitignore itself
+!.gitignore
