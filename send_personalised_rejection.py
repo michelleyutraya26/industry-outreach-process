@@ -38,23 +38,40 @@ with open("rejected_interview.csv", newline="") as csvfile:
         first_name = row["first_name"]
         last_name = row["last_name"]
         email = row["email"]
-        feedback = row.get("feedback", "").strip()
+        feedback = row.get("Exec Comments", "").strip()
 
         if not feedback:
-            print(f"⚠️ Skipping {name} ({email}) — no feedback provided.")
+            print(f"⚠️ Skipping {first_name} {last_name} ({email}) — no feedback provided.")
             continue
 
+
         print(f"✏️ Generating rejection email for {first_name} {last_name}...")
-        body = generate_rejection_email(first_name, feedback)
-        print(body)
+        attempts = 0
+        max_attempts = 10
 
-        subject = "Application to DsCubed"
+        while attempts < max_attempts:
+            body = generate_rejection_email(first_name, feedback)
+            print("\n Preview email:\n")
+            print(body)
+            user_input = input("\nDo you want to sent this email? (y=yes / r= regenerate / s = skip) ").strip().lower()
 
-        gmail.send_email(
-            sender="recruitment@dscubed.org.au",
-            recipient=email,
-            subject=subject,
-            body=body
-        )
-        print(f"✅ Email sent to {first_name} {last_name}({email})\n")
+            if user_input == "y":
+                subject = "Application to DsCubed"
+                gmail.send_email(
+                    sender="recruitment@dscubed.org.au",
+                    recipient=email,
+                    subject=subject,
+                    body=body
+                )
+                print(f"✅ Email sent to {first_name} {last_name}({email})\n")
+                break
+
+            elif user_input == "r":
+                attempts += 1
+                print("🔁 Regenerating...\n")
+            elif user_input == "s":
+                print(f"⏭️ Skipped {first_name} {last_name} ({email})\n")
+                break
+            else:
+                print("❌ Invalid input. Please enter 'y', 'r', or 's'.")
 
