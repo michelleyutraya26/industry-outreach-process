@@ -3,14 +3,31 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import requests
 from bs4 import BeautifulSoup
+from urllib.robotparser import RobotFileParser
+from urllib.parse import urlparse
 
 # Load environment variables
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Function to check if a URL is allowed by robots.txt
+def is_allowed_by_robots(url: str, user_agent: str = "MyScraperBot") -> bool:
+    parsed = urlparse(url)
+    robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
+
+    rp = RobotFileParser()
+    try:
+        rp.set_url(robots_url)
+        rp.read()
+        return rp.can_fetch(user_agent, url)
+    except Exception:
+        # If robots.txt cannot be fetched, default to allow scraping
+        return True
 
 # Extract visible text from a website
 def scrape_website_text(url: str) -> str:
+    if not is_allowed_by_robots(url):
+        return f"Scraping not allowed by robots.txt for {url}"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
