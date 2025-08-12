@@ -95,19 +95,7 @@ def generate_personalised_with_string(company: str, company_info: str, club_info
 
     return (response.choices[0].message.content or "").strip()
 
-
-# Testing the functions
-if __name__ == "__main__":
-    company = "Microsoft"
-    website_link = "https://www.microsoft.com/en-au"
-    company_info = (
-        "DSCubed recently partnered with Heidi Health at our recent Career Compass event. "
-        "We really valued the insights shared by Jane and John on our STEM panel and would love to continue our collaboration."
-    )
-    club_info = (
-        "We are DSCubed, a student-run club at the University of Melbourne focused on connecting students with real-world tech innovation. "
-        "Our mission is to empower the next generation of data scientists, software engineers, and product leaders through industry events, mentorship programs, and hands-on projects."
-    )
+def run_personalised_message(company, website_link, company_info, club_info):
     print("Choose input method:")
     print("[1] Use company info string")
     print("[2] Scrape from website")
@@ -127,7 +115,6 @@ if __name__ == "__main__":
             else:
                 print("\nMessage accepted.")
                 break
-
 
         elif choice == "2":
             scraped_content = scrape_website_text(website_link)
@@ -167,7 +154,6 @@ if __name__ == "__main__":
                         print("\nMessage accepted.")
                         break
                 break
-
             else:
                 print("\nUnderstood. Please copy-paste relevant company info from the website.")
                 user_input_text = input("\nPaste custom company info here:\n")
@@ -175,7 +161,21 @@ if __name__ == "__main__":
                 print("\nGenerated message based on your input:")
                 print(output)
                 break
-
         else:
             print("Invalid choice. Please enter 1 or 2.")
             break
+
+
+if __name__ == "__main__":
+    company = "Jane Street"
+    website_link = "https://www.janestreet.com/"
+    company_info = (
+        "DSCubed recently partnered with Heidi Health at our recent Career Compass event. "
+        "We really valued the insights shared by Jane and John on our STEM panel and would love to continue our collaboration."
+    )
+    club_info = (
+        "We are DSCubed, a student-run club at the University of Melbourne focused on connecting students with real-world tech innovation. "
+        "Our mission is to empower the next generation of data scientists, software engineers, and product leaders through industry events, mentorship programs, and hands-on projects."
+    )
+
+    run_personalised_message(company, website_link, company_info, club_info)
