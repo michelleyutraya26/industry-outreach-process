@@ -27,9 +27,10 @@ def is_allowed_by_robots(url: str, user_agent: str = "MyScraperBot") -> bool:
 # Extract visible text from a website
 def scrape_website_text(url: str) -> str:
     if not is_allowed_by_robots(url):
+        print("Scraping not allowed by robots.txt for {url}")
         return f"Scraping not allowed by robots.txt for {url}"
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=20, verify=False)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -97,8 +98,8 @@ def generate_personalised_with_string(company: str, company_info: str, club_info
 
 # Testing the functions
 if __name__ == "__main__":
-    company = "Heidi Health"
-    website_link = "https://www.heidihealth.com/au/about-us/company"
+    company = "Microsoft"
+    website_link = "https://www.microsoft.com/en-au"
     company_info = (
         "DSCubed recently partnered with Heidi Health at our recent Career Compass event. "
         "We really valued the insights shared by Jane and John on our STEM panel and would love to continue our collaboration."
