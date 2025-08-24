@@ -46,17 +46,9 @@ def scrape_website_text(url: str) -> str:
 
 
 # Updated function using scraped website content
-def generate_personalised_with_website(company: str, website_url: str, club_info: str) -> str:
-    website_info = scrape_website_text(website_url)
-
-    # print(f"Scraped content from {website_url}:\n{website_info[:500]}...\n")  # Print first 500 chars for debugging
-
-    if website_info.startswith("Failed to fetch"):
-        print("Failed to fetch website content. Skipping message generation.\n")
-        return f"(Error fetching content from {website_url}. Skipping message generation.)"
-
+def generate_personalised_with_website(company: str, scraped_content: str, club_info: str) -> str:
     prompt = (
-        f"Using the company name '{company}' and the following extracted website content:\n\n{website_info}\n\n"
+        f"Using the company name '{company}' and the following extracted website content:\n\n{scraped_content}\n\n"
         f"Here is some information about our club:\n{club_info}\n\n"
         "Write exactly two sentences for a sponsorship reach-out email section that is specific and relevant to the company. "
         "Keep the tone professional and engaging, suitable for an initial outreach. Do not exceed two sentences."
@@ -95,12 +87,20 @@ def generate_personalised_with_string(company: str, company_info: str, club_info
 
     return (response.choices[0].message.content or "").strip()
 
-def run_personalised_message(company, website_link, company_info, club_info):
+# Main function to run the personalised message generation
+def run_personalised_message(company: str, website_link: str, company_info: str):
+    club_info = (
+        "We are DSCubed, a student-run club at the University of Melbourne focused on connecting students with real-world tech innovation. "
+        "Our mission is to empower the next generation of data scientists, software engineers, and product leaders through industry events, mentorship programs, and hands-on projects."
+    )
+    
+    # User chooses input method
     print("Choose input method:")
     print("[1] Use company info string")
     print("[2] Scrape from website")
     choice = input("Enter your choice (1 or 2): ").strip()
 
+    # Loop to allow regeneration or acceptance of the message
     while True:
         if choice == "1":
             output = generate_personalised_with_string(company, company_info, club_info)
@@ -117,13 +117,14 @@ def run_personalised_message(company, website_link, company_info, club_info):
                 break
 
         elif choice == "2":
+            # Scrape website content
             scraped_content = scrape_website_text(website_link)
             if scraped_content.startswith("Failed to fetch"):
                 print(scraped_content)
                 break
 
             # Step 1: generate the first message immediately
-            output = generate_personalised_with_website(company, website_link, club_info)
+            output = generate_personalised_with_website(company, scraped_content, club_info)
             print("\nGenerated message:")
             print(output)
 
@@ -141,7 +142,7 @@ def run_personalised_message(company, website_link, company_info, club_info):
 
             if satisfied == "y":
                 while True:
-                    output = generate_personalised_with_website(company, website_link, club_info)
+                    output = generate_personalised_with_website(company, scraped_content, club_info)
                     print("\nRegenerated message:")
                     print(output)
                     user_input = input(
@@ -165,17 +166,13 @@ def run_personalised_message(company, website_link, company_info, club_info):
             print("Invalid choice. Please enter 1 or 2.")
             break
 
-
+# Example usage
 if __name__ == "__main__":
-    company = "Jane Street"
-    website_link = "https://www.janestreet.com/"
-    company_info = (
-        "DSCubed recently partnered with Heidi Health at our recent Career Compass event. "
-        "We really valued the insights shared by Jane and John on our STEM panel and would love to continue our collaboration."
-    )
-    club_info = (
-        "We are DSCubed, a student-run club at the University of Melbourne focused on connecting students with real-world tech innovation. "
-        "Our mission is to empower the next generation of data scientists, software engineers, and product leaders through industry events, mentorship programs, and hands-on projects."
+    # Example usage
+    company_name = "In-Logic"
+    website_link = "https://www.inlogic.com.au/"
+    company_info_string = (
+        "We recently collaborated with In-Logic, a leading provider of IT solutions and services. We would love to explore potential sponsorship opportunities with them."
     )
 
-    run_personalised_message(company, website_link, company_info, club_info)
+    run_personalised_message(company_name, website_link, company_info_string)

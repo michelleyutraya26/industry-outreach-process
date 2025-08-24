@@ -1,3 +1,1 @@
-# plz give me access
-
-## HAHAHA - Andy
+Use UV Sync to install all required libraries
