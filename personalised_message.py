@@ -1,54 +1,17 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
-import requests
-from bs4 import BeautifulSoup
-from urllib.robotparser import RobotFileParser
-from urllib.parse import urlparse
+from tavily import TavilyClient
 
 # Load environment variables
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# Function to check if a URL is allowed by robots.txt
-def is_allowed_by_robots(url: str, user_agent: str = "MyScraperBot") -> bool:
-    parsed = urlparse(url)
-    robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
-
-    rp = RobotFileParser()
-    try:
-        rp.set_url(robots_url)
-        rp.read()
-        return rp.can_fetch(user_agent, url)
-    except Exception:
-        # If robots.txt cannot be fetched, default to allow scraping
-        return True
-
-# Extract visible text from a website
-def scrape_website_text(url: str) -> str:
-    if not is_allowed_by_robots(url):
-        print("Scraping not allowed by robots.txt for {url}")
-        return f"Scraping not allowed by robots.txt for {url}"
-    try:
-        response = requests.get(url, timeout=20, verify=False)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        # Remove scripts and style tags
-        for script_or_style in soup(["script", "style", "noscript"]):
-            script_or_style.decompose()
-
-        # Extract visible text
-        text = soup.get_text(separator=" ", strip=True)
-        return " ".join(text.split()[:300])  # Limit to ~300 words
-    except Exception as e:
-        return f"Failed to fetch website content: {e}"
-
+tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 # Updated function using scraped website content
-def generate_personalised_with_website(company: str, scraped_content: str, club_info: str) -> str:
+def generate_personalised_with_website(company: str, website_content: str, club_info: str) -> str:
     prompt = (
-        f"Using the company name '{company}' and the following extracted website content:\n\n{scraped_content}\n\n"
+        f"Using the company name '{company}' and the following extracted website content:\n\n{website_content}\n\n"
         f"Here is some information about our club:\n{club_info}\n\n"
         "Write exactly two sentences for a sponsorship reach-out email section that is specific and relevant to the company. "
         "Keep the tone professional and engaging, suitable for an initial outreach. Do not exceed two sentences."
@@ -118,13 +81,11 @@ def run_personalised_message(company: str, website_link: str, company_info: str)
 
         elif choice == "2":
             # Scrape website content
-            scraped_content = scrape_website_text(website_link)
-            if scraped_content.startswith("Failed to fetch"):
-                print(scraped_content)
-                break
+            response = tavily_client.extract(website_link)
+            website_content = " ".join(r["raw_content"] for r in response["results"])
 
             # Step 1: generate the first message immediately
-            output = generate_personalised_with_website(company, scraped_content, club_info)
+            output = generate_personalised_with_website(company, website_content, club_info)
             print("\nGenerated message:")
             print(output)
 
@@ -136,13 +97,13 @@ def run_personalised_message(company: str, website_link: str, company_info: str)
 
             # Step 3: show scraped content and ask if it looks good
             print("\n--- Scraped Website Content Preview (First ~300 words) ---")
-            print(scraped_content)
+            print(response["results"][0]["raw_content"][:2000])  # Show first ~300 words
             print("-----------------------------------------------------------\n")
             satisfied = input("Are you happy with the scraped content? (y/n): ").strip().lower()
 
             if satisfied == "y":
                 while True:
-                    output = generate_personalised_with_website(company, scraped_content, club_info)
+                    output = generate_personalised_with_website(company, website_content, club_info)
                     print("\nRegenerated message:")
                     print(output)
                     user_input = input(
@@ -169,8 +130,8 @@ def run_personalised_message(company: str, website_link: str, company_info: str)
 # Example usage
 if __name__ == "__main__":
     # Example usage
-    company_name = "In-Logic"
-    website_link = "https://www.inlogic.com.au/"
+    company_name = "BHP"
+    website_link = "https://www.bhp.com/about"
     company_info_string = (
         "We recently collaborated with In-Logic, a leading provider of IT solutions and services. We would love to explore potential sponsorship opportunities with them."
     )
