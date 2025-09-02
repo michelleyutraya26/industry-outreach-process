@@ -81,8 +81,9 @@ def run_personalised_message(company: str, website_link: str, company_info: str)
 
         elif choice == "2":
             # Scrape website content
-            response = tavily_client.extract(website_link)
-            website_content = " ".join(r["raw_content"] for r in response["results"])
+            response = tavily_client.extract(website_link,include_images=False,include_favicon=False,format='Text')
+            full_website_content = " ".join(r["raw_content"] for r in response["results"])
+            website_content = " ".join(full_website_content.split()[:300])
 
             # Step 1: generate the first message immediately
             output = generate_personalised_with_website(company, website_content, club_info)
@@ -97,7 +98,7 @@ def run_personalised_message(company: str, website_link: str, company_info: str)
 
             # Step 3: show scraped content and ask if it looks good
             print("\n--- Scraped Website Content Preview (First ~300 words) ---")
-            print(response["results"][0]["raw_content"][:2000])  # Show first ~300 words
+            print(response["results"][0]["raw_content"][:5000])  # Show first ~300 words
             print("-----------------------------------------------------------\n")
             satisfied = input("Are you happy with the scraped content? (y/n): ").strip().lower()
 
@@ -130,8 +131,8 @@ def run_personalised_message(company: str, website_link: str, company_info: str)
 # Example usage
 if __name__ == "__main__":
     # Example usage
-    company_name = "BHP"
-    website_link = "https://www.bhp.com/about"
+    company_name = "Jane Street"
+    website_link = "https://www.janestreet.com/who-we-are/"
     company_info_string = (
         "We recently collaborated with In-Logic, a leading provider of IT solutions and services. We would love to explore potential sponsorship opportunities with them."
     )
