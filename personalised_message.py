@@ -81,7 +81,7 @@ def run_personalised_message(company: str, website_link: str, company_info: str)
 
         elif choice == "2":
             # Scrape website content
-            response = tavily_client.extract(website_link,include_images=False,include_favicon=False,format='Text')
+            response = tavily_client.extract(website_link,include_images=False,include_favicon=False,extract_depth='advanced',format='Text')
             full_website_content = " ".join(r["raw_content"] for r in response["results"])
             website_content = " ".join(full_website_content.split()[:300])
 
@@ -131,8 +131,8 @@ def run_personalised_message(company: str, website_link: str, company_info: str)
 # Example usage
 if __name__ == "__main__":
     # Example usage
-    company_name = "Jane Street"
-    website_link = "https://www.janestreet.com/who-we-are/"
+    company_name = "Ed STEM"
+    website_link = "https://edstem.org/about"
     company_info_string = (
         "We recently collaborated with In-Logic, a leading provider of IT solutions and services. We would love to explore potential sponsorship opportunities with them."
     )
