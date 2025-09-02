@@ -32,10 +32,10 @@ def generate_personalised_with_website(company: str, website_content: str, club_
 
 def generate_personalised_with_string(company: str, company_info: str, club_info: str) -> str:
     prompt = (
-        f"Using the company name '{company}' and must use the following information about the company:\n{company_info}\n\n"
-        f"Here is some information about our club:\n{club_info}\n\n"
-        "Write exactly two sentences for a sponsorship reach-out email section that is specific and relevant to the company. "
-        "Keep the tone professional and engaging, suitable for an initial outreach. Do not exceed two sentences. Please don't include cookies in the output."
+        f"Using the company name '{company}' and must use company info:\n{company_info}\n\n"
+        f"Here is our student club info:\n{club_info}\n\n"
+        "Write exactly two sentences for a sponsorship reach-out email section that is specific and relevant to the company."
+        "Professional and engaging tone, suitable for an initial outreach. Do not exceed two sentences."
     )
 
     response = client.chat.completions.create(
@@ -45,7 +45,7 @@ def generate_personalised_with_string(company: str, company_info: str, club_info
             {"role": "user", "content": prompt}
         ],
         temperature=0.7,
-        max_tokens=300
+        max_tokens=500
     )
 
     return (response.choices[0].message.content or "").strip()
